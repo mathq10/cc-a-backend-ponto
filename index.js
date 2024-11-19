@@ -1,37 +1,64 @@
 const express = require('express');
 const app = express();
+const cors = require('cors');
 
 const sequelize = require('./config/db');
+const Usuario = require('./models/Usuario');
+const Ponto = require('./models/Ponto');
 
-sequelize.authenticate()
+
+app.use(express.json());
+app.use(cors());
+
+sequelize.sync({ alter: true })
     .then(() => {
-        console.log("Conectei no banco");
+        console.log("SUCESSO!");
     })
     .catch(error => {
-        console.log(`Deu erro ao conectar no bd ${error}`);
+        console.log(`Erro ao sincronizar as tabelas - ${error}`);
     });
 
 
+//Usuario.create({ nome: "Airton", email: "airton@airton.com", login: "airton", senha: "amomeusalunos", permissao: "USER"});
+//Usuario.create({ nome: "Airton Junior", email: "airtonjunior@airton.com", login: "airtonjunior", senha: "amomeusalunos", permissao: "USER"});
 
 
 
-// app.METODO('rota/caminho', (req, res) => {})
-
-app.get('/users', (req, res) => {
-    res.send("Nessa rota vou retornar os usuários");
+// Rota que recupera todos os usuários da aplicação
+app.get('/usuarios', async (req, res) => {
+    const usuarios = await Usuario.findAll();
+    res.send(usuarios);
 });
 
-app.post('/users', (req, res) => {
-    res.send("Rota users usando post");
+
+// Rota que recupera um usuário específico do banco de dados RELACIONAL
+app.get('/usuario/:id_usuario', async (req, res) => {
+    
+    const usuario = await Usuario.findAll({
+        where: {
+          id_usuario: req.params.id_usuario, 
+        },
+    });
+
+    res.send(usuario);
 });
 
-app.get('/user/:id', (req, res) => {
-    res.send(`o parâmetro é ${req.params.id}`)
+
+// Rota que cria um usuário
+app.post('/usuario', async (req, res) => {
+
+    const usuario = await Usuario.create({
+        nome: req.body.nome,
+        email: req.body.email,
+        senha: req.body.senha,
+        login: req.body.login,
+        permissao: req.body.permissao
+    });
+
+
+    res.send(usuario);
 });
 
-app.post('/user/:id1-:id2', (req, res) => {
-    res.send(req.params);
-});
 
 const PORT = 3000;
 
